@@ -12,20 +12,29 @@ const io = socketIo(server);
 // Configuración de rutas estáticas para servir el Frontend
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Ruta del archivo credenciales
-const serviceAccountPath = path.join(__dirname, 'credentials.json');
+// Configuración dinámica de credenciales (Local vs Vercel)
+let serviceAccount;
 
-// Inicializar Firebase Admin
 try {
-    if (fs.existsSync(serviceAccountPath)) {
-        const serviceAccount = require(serviceAccountPath);
+    if (process.env.FIREBASE_CONFIG) {
+        // En Vercel: Lee la variable de entorno que configuraste
+        serviceAccount = JSON.parse(process.env.FIREBASE_CONFIG);
+    } else {
+        // En tu PC: Busca el archivo credentials.json local
+        const serviceAccountPath = path.join(__dirname, 'credentials.json');
+        if (fs.existsSync(serviceAccountPath)) {
+            serviceAccount = require(serviceAccountPath);
+        }
+    }
+
+    if (serviceAccount) {
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
             databaseURL: "https://agenda-b100-nexcorp-default-rtdb.firebaseio.com"
         });
         console.log("🔥 Firebase Admin inicializado correctamente.");
     } else {
-        console.warn("⚠️ ADVERTENCIA: El archivo credentials.json no se encontró en la raíz del proyecto. Firebase no se ha inicializado.");
+        console.warn("⚠️ ADVERTENCIA: No se encontraron credenciales. Firebase no se ha inicializado.");
     }
 } catch (error) {
     console.error("❌ Error al inicializar Firebase Admin:", error);
