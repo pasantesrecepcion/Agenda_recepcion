@@ -1,0 +1,1513 @@
+/* =========================================================
+   VARIABLES & CUSTOM PROPERTIES
+   ========================================================= */
+:root {
+    --bg-main: #0A0F1A;
+    --bg-panel: rgba(14, 25, 41, 0.7);
+    --border-light: rgba(45, 212, 191, 0.2);
+
+    --neon-cyan: #2DD4BF;
+    --neon-blue: #3B82F6;
+    --neon-red: #EF4444;
+    --neon-green: #10B981;
+    --neon-orange: #F59E0B;
+    --neon-yellow: #EAB308;
+    --neon-purple: #8B5CF6;
+
+    --text-main: #E2E8F0;
+    --text-muted: #94A3B8;
+
+    --font-head: 'Orbitron', sans-serif;
+    --font-ui: 'Rajdhani', sans-serif;
+    --font-mono: 'Share Tech Mono', monospace;
+
+    /* Gantt variables (se ajustan dinÃ¡micamente) */
+    --gantt-hour-width: 60px;
+    /* Ancho de 1 hora en pÃ­xeles */
+}
+
+/* =========================================================
+   GLOBAL STYLES
+   ========================================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-main);
+    /* Fondo Industrial Cyberpunk */
+    background-image:
+        linear-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(45, 212, 191, 0.03) 1px, transparent 1px),
+        linear-gradient(rgba(45, 212, 191, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(45, 212, 191, 0.015) 1px, transparent 1px);
+    background-size: 80px 80px, 80px 80px, 20px 20px, 20px 20px;
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.cyber-grid {
+    position: absolute;
+    bottom: -30%;
+    left: -50%;
+    width: 200%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(45, 212, 191, 0.5) 2px, transparent 2px),
+        linear-gradient(90deg, rgba(45, 212, 191, 0.5) 2px, transparent 2px);
+    background-size: 60px 60px;
+    transform: perspective(600px) rotateX(60deg);
+    animation: gridMove 3s linear infinite;
+    z-index: -2;
+}
+
+@keyframes gridMove {
+    0% {
+        background-position: 0 0;
+    }
+
+    100% {
+        background-position: 0 60px;
+    }
+}
+
+.cyber-grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, transparent 0%, var(--bg-main) 80%);
+    z-index: -1;
+    pointer-events: none;
+}
+
+.dashboard-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 10px;
+    gap: 15px;
+}
+
+/* =========================================================
+   UTILITIES & NEON EFFECTS
+   ========================================================= */
+.glass-panel {
+    background: rgba(10, 15, 25, 0.5);
+    /* Transparency to see background */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 8px;
+    border: 1px solid var(--border-light);
+    box-shadow: 0 0 15px rgba(45, 212, 191, 0.3), inset 0 0 10px rgba(45, 212, 191, 0.1);
+    /* Brillo alrededor */
+}
+
+.neon-text {
+    text-shadow: 0 0 5px var(--neon-cyan), 0 0 10px var(--neon-cyan);
+    color: #fff;
+}
+
+.text-cyan {
+    color: var(--neon-cyan);
+}
+
+.text-red {
+    color: var(--neon-red);
+}
+
+.text-green {
+    color: var(--neon-green);
+}
+
+.text-blue {
+    color: var(--neon-blue);
+}
+
+.border-cyan {
+    border-color: var(--neon-cyan) !important;
+    box-shadow: inset 0 0 10px rgba(45, 212, 191, 0.2), 0 0 5px rgba(45, 212, 191, 0.2);
+}
+
+.border-blue {
+    border-color: var(--neon-blue) !important;
+    box-shadow: inset 0 0 10px rgba(59, 130, 246, 0.2), 0 0 5px rgba(59, 130, 246, 0.2);
+}
+
+.border-red {
+    border-color: var(--neon-red) !important;
+    box-shadow: inset 0 0 10px rgba(239, 68, 68, 0.2), 0 0 5px rgba(239, 68, 68, 0.2);
+}
+
+.border-green {
+    border-color: var(--neon-green) !important;
+    box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.2), 0 0 5px rgba(16, 185, 129, 0.2);
+}
+
+.bg-cyan {
+    background-color: var(--neon-cyan);
+    box-shadow: 0 0 8px var(--neon-cyan);
+}
+
+.bg-blue {
+    background-color: var(--neon-blue);
+    box-shadow: 0 0 8px var(--neon-blue);
+}
+
+.bg-red {
+    background-color: var(--neon-red);
+    box-shadow: 0 0 8px var(--neon-red);
+}
+
+.bg-green {
+    background-color: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+}
+
+.bg-orange {
+    background-color: var(--neon-orange);
+    box-shadow: 0 0 8px var(--neon-orange);
+}
+
+.bg-yellow {
+    background-color: var(--neon-yellow);
+    box-shadow: 0 0 8px var(--neon-yellow);
+}
+
+.bg-purple {
+    background-color: var(--neon-purple);
+    box-shadow: 0 0 8px var(--neon-purple);
+}
+
+.neon-box {
+    position: relative;
+}
+
+.neon-box::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: -1px;
+    right: -1px;
+    bottom: -1px;
+    border-radius: inherit;
+    background: linear-gradient(45deg, var(--neon-cyan), var(--neon-blue), transparent);
+    z-index: -1;
+    opacity: 0.3;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+.app-header {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 2px solid var(--neon-cyan);
+    border-radius: 4px;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-title h1 {
+    font-family: var(--font-head);
+    font-size: 20px;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+/* =========================================================
+   KPI ROW
+   ========================================================= */
+.kpi-row {
+    display: flex;
+    gap: 15px;
+    height: 80px;
+}
+
+.kpi-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    position: relative;
+    border-width: 2px;
+}
+
+.kpi-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+.kpi-value {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.time-value {
+    font-size: 22px;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 10px var(--neon-cyan);
+}
+
+.kpi-sparkline {
+    width: 60%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    margin-top: 5px;
+    overflow: hidden;
+}
+
+.sparkline-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+}
+
+/* =========================================================
+   MAIN LAYOUT (3 COLUMNS)
+   ========================================================= */
+.main-content {
+    display: flex;
+    gap: 0;
+    /* Gap handled by sidebar margins and flex-grow */
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+}
+
+.gantt-section {
+    flex-grow: 1;
+    /* Occupies all available space to the left */
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--neon-cyan);
+    overflow: hidden;
+    position: relative;
+}
+
+.gantt-header-title {
+    text-align: center;
+    font-size: 12px;
+    color: var(--neon-cyan);
+    letter-spacing: 2px;
+    padding: 5px;
+    border-bottom: 1px solid var(--border-light);
+    font-family: var(--font-head);
+}
+
+/* =========================================================
+   FORMS & BUTTONS
+   ========================================================= */
+.panel-subtitle {
+    font-size: 12px;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 5px;
+}
+
+.panel-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.form-group-row {
+    display: flex;
+    gap: 10px;
+}
+
+.form-group .half {
+    flex: 1;
+}
+
+.form-group label {
+    font-size: 10px;
+    color: var(--neon-cyan);
+    margin-bottom: 3px;
+}
+
+.neon-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-light);
+    border-radius: 4px;
+    padding: 6px 10px;
+    color: #fff;
+    font-family: var(--font-mono);
+    outline: none;
+    transition: all 0.3s;
+}
+
+.neon-input:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 8px rgba(45, 212, 191, 0.4);
+}
+
+.text-right {
+    text-align: right;
+}
+
+.neon-btn {
+    background: transparent;
+    border: 1px solid;
+    padding: 10px;
+    border-radius: 4px;
+    color: #fff;
+    font-family: var(--font-ui);
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.3s;
+    margin-top: 10px;
+    letter-spacing: 1px;
+}
+
+.btn-cyan {
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+}
+
+.btn-cyan:hover {
+    background: var(--neon-cyan);
+    color: #000;
+    box-shadow: 0 0 15px var(--neon-cyan);
+}
+
+.btn-green {
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+}
+
+.btn-green:hover {
+    background: var(--neon-green);
+    color: #000;
+    box-shadow: 0 0 15px var(--neon-green);
+}
+
+.btn-red {
+    border-color: var(--neon-red);
+    color: var(--neon-red);
+}
+
+.btn-red:hover {
+    background: var(--neon-red);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
+}
+
+.logout-btn {
+    background: transparent;
+    border: 1px solid var(--neon-red);
+    color: var(--neon-red);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.logout-btn:hover {
+    background: var(--neon-red);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.7);
+}
+
+/* HOME BUTTON */
+.home-btn {
+    background: transparent;
+    border: 2px solid var(--neon-cyan);
+    color: var(--neon-cyan);
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
+    /* Minimalist square-ish */
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home-btn:hover {
+    background: var(--neon-cyan);
+    color: #000;
+    box-shadow: 0 0 15px var(--neon-cyan);
+    transform: translateY(-2px);
+}
+
+.neon-btn.btn-red {
+    border-color: #ff003c;
+    color: #ff003c;
+}
+
+.neon-btn.btn-red:hover {
+    background: #ff003c;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255, 0, 60, 0.6);
+}
+
+.hidden {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+/* ========================================================= */
+/* ESTADOS CANCELADOS - CORREGIDO (1 SOLO LÃSER LENTO) */
+/* ========================================================= */
+.bar-cancelled {
+    background: rgba(255, 0, 0, 0.1) !important;
+    border: 1px solid #ff0000 !important;
+    box-shadow: inset 0 0 10px rgba(255, 0, 0, 0.3), 0 0 15px rgba(255, 0, 0, 0.2) !important;
+    overflow: hidden !important;
+    position: relative;
+}
+
+/* Eliminamos el ::before que creaba la segunda lÃ­nea/ola */
+.bar-cancelled::before {
+    display: none;
+}
+
+/* Configuramos el ::after como el ÃšNICO lÃ¡ser infinito y lento */
+.bar-cancelled::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -100px;
+    width: 15px;
+    /* Un poco mÃ¡s grueso para que se vea mejor */
+    height: 200%;
+    background: #ff0000;
+    box-shadow: 0 0 15px #ff0000, 0 0 30px #ff0000;
+    transform: rotate(25deg);
+    /* Cambiado a 6s para que sea lento e infinite para el loop */
+    animation: laser-scan 6s infinite linear;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.8;
+}
+
+.bar-cancelled .gantt-bar-content {
+    position: relative;
+    z-index: 3;
+}
+
+.bar-cancelled .gantt-bar-title {
+    text-decoration: none !important;
+    color: #ffffff !important;
+    text-shadow: 0 0 5px #ff0000, 0 0 10px rgba(0, 0, 0, 0.8);
+    opacity: 1 !important;
+}
+
+/* Keyframes ajustados para un recorrido total y limpio */
+@keyframes laser-scan {
+    0% {
+        left: -100px;
+    }
+
+    100% {
+        left: 200%;
+        /* Asegura que salga completamente antes de reiniciar */
+    }
+}
+
+.estimated-time {
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 20px;
+    color: var(--neon-cyan);
+    margin-top: 5px;
+    text-shadow: 0 0 5px var(--neon-cyan);
+}
+
+.mt-2 {
+    margin-top: 10px;
+}
+
+.mt-3 {
+    margin-top: 15px;
+}
+
+.mt-auto {
+    margin-top: auto;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* =========================================================
+   RIGHT PANEL LIST (SUGGERENCIAS)
+   ========================================================= */
+.suggestion-item {
+    font-size: 11px;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.suggestion-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.excel-link-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+}
+
+.excel-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(16, 185, 129, 0.1);
+    border: 2px solid var(--neon-green);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--neon-green);
+    font-family: var(--font-head);
+    font-size: 20px;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s;
+}
+
+.excel-link-box:hover .excel-icon {
+    background: var(--neon-green);
+    color: #000;
+    box-shadow: 0 0 20px var(--neon-green);
+}
+
+.excel-text {
+    font-size: 10px;
+    color: var(--neon-green);
+    letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   GANTT CHART CORE
+   ========================================================= */
+.gantt-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+}
+
+.gantt-wrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.gantt-wrapper::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+.gantt-wrapper::-webkit-scrollbar-thumb {
+    background: var(--border-light);
+    border-radius: 4px;
+}
+
+.gantt-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--neon-cyan);
+}
+
+
+.gantt-container {
+    display: flex;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Y-Axis: Categorized Doors */
+.gantt-y-axis {
+    width: 160px;
+    flex-shrink: 0;
+    background: rgba(14, 25, 41, 0.9);
+    border-right: 1px solid var(--border-light);
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+}
+
+.gantt-corner {
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light);
+    font-size: 10px;
+    color: var(--neon-cyan);
+    letter-spacing: 1px;
+}
+
+.door-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 13px;
+    font-weight: 700;
+    position: relative;
+    cursor: default;
+}
+
+/* Style for categorized doors based on color class */
+.door-label .badge {
+    border: 1px solid;
+    padding: 4px 8px;
+    border-radius: 12px;
+    width: 100%;
+    text-align: center;
+    letter-spacing: 1px;
+    transition: all 0.3s;
+}
+
+.door-cyan .badge {
+    border-color: var(--neon-cyan);
+    color: var(--neon-cyan);
+    box-shadow: 0 0 5px rgba(45, 212, 191, 0.2);
+}
+
+.door-blue .badge {
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
+}
+
+.door-red .badge {
+    border-color: var(--neon-red);
+    color: var(--neon-red);
+    box-shadow: 0 0 5px rgba(239, 68, 68, 0.2);
+}
+
+.door-orange .badge {
+    border-color: var(--neon-orange);
+    color: var(--neon-orange);
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.2);
+}
+
+.door-green .badge {
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+    box-shadow: 0 0 5px rgba(16, 185, 129, 0.2);
+}
+
+
+/* X-Axis and Content Area */
+.gantt-timeline-area {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+}
+
+/* X-Axis: Hours */
+.gantt-x-axis {
+    height: 40px;
+    display: flex;
+    border-bottom: 1px solid var(--border-light);
+    position: sticky;
+    top: 0;
+    background: rgba(14, 25, 41, 0.9);
+    z-index: 5;
+    overflow: hidden;
+}
+
+.time-slot {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: flex-start;
+    padding-left: 6px;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 800;
+    color: #fff;
+    text-shadow: 0 0 6px var(--neon-cyan), 0 0 12px var(--neon-cyan);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+    overflow: visible;
+}
+
+/* Grid lines */
+.gantt-grid {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.grid-line {
+    flex-shrink: 0;
+    border-right: 1px dashed rgba(255, 255, 255, 0.05);
+    height: 100%;
+}
+
+.lunch-block {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: rgba(239, 68, 68, 0.15);
+    border-left: 1px solid var(--neon-red);
+    border-right: 1px solid var(--neon-red);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.lunch-text.label-huge {
+    color: #fff;
+    font-weight: bold;
+    font-size: 25px;
+    /* Texto triple de grande */
+    letter-spacing: 5px;
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    text-shadow: 0 0 10px var(--neon-red), 0 0 30px var(--neon-red);
+    opacity: 0.6;
+}
+
+/* Gantt Bars Area */
+.gantt-bars-container {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+}
+
+.gantt-row {
+    flex: 1;
+    position: relative;
+    border-bottom: 1px solid transparent;
+}
+
+.gantt-bar {
+    position: absolute;
+    height: 30px;
+    top: 10px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+    cursor: pointer;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: filter 0.3s, transform 0.2s;
+    /* Box shadows and background applied via inline classes or js */
+}
+
+.gantt-bar:hover {
+    filter: brightness(1.3);
+    z-index: 10;
+    transform: scaleY(1.05);
+}
+
+.gantt-bar-content {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.gantt-bar-title {
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.gantt-bar-meta {
+    font-size: 9px;
+    opacity: 0.8;
+    margin-left: 10px;
+}
+
+/* Current Time Marker (Scanner Animation) */
+@keyframes scannerRun {
+    0% {
+        left: -150px;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+.current-time-marker {
+    display: none;
+    /* remove fallback */
+}
+
+.scanner-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 140px;
+    background: linear-gradient(90deg, transparent, rgba(45, 212, 191, 0.35), transparent);
+    z-index: 3;
+    pointer-events: none;
+    animation: scannerRun 10s linear infinite;
+    opacity: 0.7;
+}
+
+.marker-head {
+    display: none;
+}
+
+.marker-line {
+    display: none;
+}
+
+/* =========================================================
+   TOOLTIP
+   ========================================================= */
+.gantt-tooltip {
+    position: fixed;
+    background: rgba(10, 15, 26, 0.95);
+    border: 1px solid var(--neon-cyan);
+    box-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-family: var(--font-ui);
+    color: #fff;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.2s;
+    backdrop-filter: blur(5px);
+}
+
+.gantt-tooltip.visible {
+    opacity: 1;
+}
+
+.tooltip-title {
+    font-family: var(--font-head);
+    color: var(--neon-cyan);
+    margin-bottom: 5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+}
+
+.tooltip-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+    gap: 15px;
+}
+
+.tooltip-label {
+    color: var(--text-muted);
+}
+
+.tooltip-val {
+    font-family: var(--font-mono);
+    font-weight: bold;
+}
+
+/* =========================================================
+   NUEVAS CLASES â€” LOGIN DASHBOARD
+   ========================================================= */
+.login-overlay-dash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(7, 9, 15, 0.97);
+    backdrop-filter: blur(12px);
+    transition: opacity 0.5s;
+}
+
+.login-box-dash {
+    background: rgba(10, 17, 30, 0.96);
+    border: 1px solid rgba(45, 212, 191, 0.35);
+    box-shadow: 0 0 50px rgba(45, 212, 191, 0.2), inset 0 0 30px rgba(45, 212, 191, 0.03);
+    border-radius: 14px;
+    padding: 48px 44px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    animation: fadeInUpDash 0.4s ease;
+}
+
+@keyframes fadeInUpDash {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.login-logo-dash {
+    width: 68px;
+    height: 68px;
+    border: 2px solid var(--neon-cyan);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 18px;
+    font-size: 26px;
+    color: var(--neon-cyan);
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.45);
+    animation: pulseDash 2.5s ease infinite;
+}
+
+@keyframes pulseDash {
+
+    0%,
+    100% {
+        box-shadow: 0 0 12px rgba(45, 212, 191, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 0 32px rgba(45, 212, 191, 0.85);
+    }
+}
+
+.login-title-dash {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    color: var(--neon-cyan);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+    text-shadow: 0 0 8px rgba(45, 212, 191, 0.5);
+}
+
+.login-subtitle-dash {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 28px;
+    letter-spacing: 1px;
+}
+
+.login-fg {
+    margin-bottom: 14px;
+    text-align: left;
+}
+
+.login-fg label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    font-family: var(--font-ui);
+}
+
+.login-fg label i {
+    color: var(--neon-cyan);
+    margin-right: 5px;
+}
+
+.login-fg input {
+    width: 100%;
+    padding: 11px 13px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(45, 212, 191, 0.3);
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.93rem;
+    outline: none;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    font-family: var(--font-mono);
+}
+
+.login-fg input:focus {
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(45, 212, 191, 0.3);
+}
+
+.login-err-dash {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 6px;
+    padding: 10px 13px;
+    font-size: 0.83rem;
+    color: #fc8181;
+    margin-bottom: 12px;
+}
+
+.login-btn-dash {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    border: 1px solid var(--neon-cyan);
+    border-radius: 6px;
+    color: var(--neon-cyan);
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 4px;
+    font-family: var(--font-ui);
+}
+
+.login-btn-dash:hover {
+    background: var(--neon-cyan);
+    color: #060913;
+    box-shadow: 0 0 20px rgba(45, 212, 191, 0.5);
+}
+
+/* =========================================================
+   BLOQUE DISTRIBUCIÃ“N
+   ========================================================= */
+.dist-block {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(45deg,
+            rgba(100, 116, 139, 0.12),
+            rgba(100, 116, 139, 0.12) 4px,
+            transparent 4px,
+            transparent 10px);
+    border-left: 1px solid rgba(148, 163, 184, 0.3);
+    border-right: 1px solid rgba(148, 163, 184, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.dist-text {
+    color: rgba(200, 210, 220, 0.6);
+    font-family: var(--font-head);
+    font-size: 9px;
+    letter-spacing: 2px;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   DISTINCIÃ“N DP / CDS EN BARRAS (LIMPIO)
+   ========================================================= */
+.gantt-bar.bar-dp {
+    /* Eliminamos el outline que causaba el borde molesto */
+    outline: none !important;
+    outline-offset: 0;
+    /* Si quieres que se note la diferencia, usa un borde interno sutil */
+    border: 1px solid rgba(245, 158, 11, 0.5) !important;
+}
+
+.gantt-bar.bar-cds {
+    /* Eliminamos el borde pÃºrpura/violeta de las barras CDS */
+    outline: none !important;
+    outline-offset: 0;
+    /* Usamos un borde sutil del mismo tono pero sin el efecto de "cuadro" exterior */
+    border: 1px solid rgba(167, 139, 250, 0.5) !important;
+}
+
+/* TambiÃ©n revisa si tienes esta clase que mencionaste antes */
+.text-dp {
+    color: #f59e0b;
+    font-weight: bold;
+}
+
+.text-cds {
+    color: #a78bfa;
+    font-weight: bold;
+}
+
+/* =========================================================
+   BOTÃ“N ELIMINAR CITA (TOOLTIP â€” SUPERVISOR)
+   ========================================================= */
+.del-cita-btn {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #fc8181;
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: var(--font-ui);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.25s;
+    width: 100%;
+}
+
+.del-cita-btn:hover {
+    background: #ef4444;
+    color: #fff;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+}
+
+/* =========================================================
+   BADGE DE ROL EN HEADER
+   ========================================================= */
+.role-badge-sup,
+.role-badge-prov {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: var(--font-head);
+}
+
+.role-badge-sup {
+    background: rgba(45, 212, 191, 0.1);
+    border: 1px solid rgba(45, 212, 191, 0.4);
+    color: var(--neon-cyan);
+}
+
+.role-badge-prov {
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.4);
+    color: #a78bfa;
+}
+
+/* Asegurar que el dashboard-container ocupe el 100% con display flex */
+#dashApp {
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* =========================================================
+   BARRA DISTRIBUCIÃ“N ESTÃTICA (GANTT)
+   ========================================================= */
+.dist-static-bar {
+    background: repeating-linear-gradient(45deg,
+            rgba(100, 116, 139, 0.25),
+            rgba(100, 116, 139, 0.25) 3px,
+            rgba(71, 85, 105, 0.15) 3px,
+            rgba(71, 85, 105, 0.15) 8px) !important;
+    box-shadow: none !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    pointer-events: none;
+    cursor: default;
+    z-index: 2;
+}
+
+.dist-label {
+    font-family: var(--font-head);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(203, 213, 225, 0.75) !important;
+    text-transform: uppercase;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* FOOTER REMOVIDO PARA DAR MAXIMO ESPACIO */
+.back-home-btn {
+    position: absolute;
+    top: 18px;
+    right: 140px;
+    /* Ajustado para que no choque con el Logout */
+    z-index: 100;
+    background: rgba(45, 212, 191, 0.1);
+    border: 1px solid #2dd4bf;
+    color: #2dd4bf;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    pointer-events: auto;
+}
+
+.back-home-btn:hover {
+    background: #2dd4bf;
+    color: #0a0f1a;
+    box-shadow: 0 0 15px #2dd4bf;
+    transform: translateY(-2px);
+}
+
+.back-home-btn i {
+    font-size: 14px;
+}
+
+/* =========================================================
+   INCIDENTS SIDEBAR (CYBER-TECH REFINEMENT)
+   ========================================================= */
+.incidents-sidebar {
+    width: 450px;
+    /* EXPANDED WIDTH FOR READABILITY */
+    flex-shrink: 0;
+    margin-left: auto;
+    align-self: flex-start;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(14, 25, 41, 0.99), rgba(10, 15, 26, 0.95));
+    backdrop-filter: blur(30px);
+    border-left: 2px solid var(--neon-cyan);
+    display: flex;
+    flex-direction: column;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 100;
+    overflow: hidden;
+}
+
+.incidents-sidebar.hidden {
+    width: 0;
+    min-width: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(100%);
+}
+
+.sidebar-header {
+    padding: 15px 10px;
+    text-align: center;
+    border-bottom: 2px solid var(--neon-cyan);
+    background: rgba(14, 25, 41, 0.95);
+    z-index: 10;
+}
+
+.sidebar-header h3 {
+    font-family: var(--font-head);
+    font-size: 14px;
+    letter-spacing: 2px;
+    color: #fff;
+    text-shadow: 0 0 10px var(--neon-cyan);
+    margin: 0;
+}
+
+.incidents-table-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 5px 15px 5px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--neon-cyan) transparent;
+}
+
+.incidents-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+    table-layout: fixed; /* Ensures column widths are respected */
+}
+
+.incidents-table thead {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg-main);
+}
+
+.incidents-table th {
+    font-size: 10px;
+    color: #fff;
+    background: rgba(45, 212, 191, 0.2);
+    border: 1px solid var(--neon-cyan);
+    padding: 10px 8px;
+    text-align: left;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: var(--font-head);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+}
+
+/* Distribution with priorities */
+.incidents-table th:nth-child(1), .col-prov { width: 30%; }
+.incidents-table th:nth-child(2), .col-inc  { width: 35%; }
+.incidents-table th:nth-child(3), .col-tipo { width: 20%; }
+.incidents-table th:nth-child(4), .col-hrs  { width: 15%; text-align: center; }
+
+#incidents-body tr {
+    transition: background 0.3s;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+#incidents-body tr:hover {
+    background: rgba(45, 212, 191, 0.15);
+}
+
+#incidents-body td {
+    padding: 12px 8px;
+    font-size: 11px;
+    color: #fff;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    white-space: normal;
+    word-break: break-word;
+}
+
+.col-prov { color: var(--neon-cyan); font-weight: 700; }
+.col-hrs { color: var(--neon-red); font-family: var(--font-mono); font-weight: 700; }
+
+/* FLOATING TAB (DISCRETE & PULSE) */
+.incidents-tab {
+    position: fixed;
+    right: 0;
+    top: 55%;
+    transform: translateY(-50%);
+    background: rgba(7, 10, 18, 0.95);
+    border: 1px solid var(--neon-cyan);
+    border-right: none;
+    color: var(--neon-cyan);
+    padding: 12px 6px;
+    border-radius: 8px 0 0 8px;
+    cursor: pointer;
+    z-index: 1001;
+    transition: all 0.4s;
+    box-shadow: -2px 0 10px rgba(45, 212, 191, 0.2);
+    animation: neonTabPulse 2.5s infinite;
+}
+
+@keyframes neonTabPulse {
+    0% {
+        box-shadow: -2px 0 5px rgba(45, 212, 191, 0.3);
+        transform: translateY(-50%) translateX(0);
+    }
+
+    50% {
+        box-shadow: -8px 0 20px rgba(45, 212, 191, 0.6);
+        transform: translateY(-50%) translateX(-3px);
+    }
+
+    100% {
+        box-shadow: -2px 0 5px rgba(45, 212, 191, 0.3);
+        transform: translateY(-50%) translateX(0);
+    }
+}
+
+.incidents-tab i {
+    font-size: 11px;
+}
+
+.incidents-tab:hover {
+    background: var(--neon-cyan);
+    color: #000;
+}
+
+/* EMPTY STATE STYLE */
+.empty-incidents {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 2px;
+    font-family: var(--font-head);
+    opacity: 0.5;
+    text-align: center;
+    padding: 20px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+/* GANTT ADAPTIVE CONTRACTION */
+#gantt-main-section {
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.gantt-wrapper {
+    overflow-x: overlay;
+    /* Scroll interactive without shifting layout */
+    scrollbar-width: none;
+    /* Firefox invisible */
+    flex: 1;
+}
+
+/* Cyber Scrollbar for Gantt (Hover only) */
+.gantt-wrapper::-webkit-scrollbar {
+    height: 6px;
+    display: none;
+    /* Hidden by default in WebKit */
+}
+
+.gantt-wrapper:hover::-webkit-scrollbar {
+    display: block;
+    /* Visible on hover */
+}
+
+.gantt-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.gantt-wrapper::-webkit-scrollbar-thumb {
+    background: var(--neon-cyan);
+    border-radius: 10px;
+    box-shadow: 0 0 10px var(--neon-cyan);
+}
+
+.sidebar-open #gantt-main-section {
+    flex-grow: 1;
+    /* Maintains expansion logic */
+}

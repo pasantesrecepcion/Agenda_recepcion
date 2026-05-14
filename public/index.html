@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda CEDIS - Plataforma Pro</title>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- ANIMATED BACKGROUND (CYBER GRID) -->
+    <div class="cyber-grid"></div>
+    <div class="cyber-grid-overlay"></div>
+
+    <!-- TOOLTIP GLOBAL -->
+    <div id="custom-tooltip" class="gantt-tooltip neon-border"></div>
+
+    <div class="dashboard-container" id="dashApp" style="display:flex;">
+
+        <!-- HEADER -->
+        <header class="app-header neon-box" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="header-title">
+                <h1>AGENDA CEDIS - <span class="neon-text">PLATAFORMA PRO DE AGENDAMIENTO</span></h1>
+            </div>
+
+            <div class="header-controls" style="display:flex; align-items:center; gap: 10px; padding-right: 20px;">
+                <label
+                    style="color:#fff; font-family:var(--font-head); font-size:12px; text-shadow: 0 0 5px var(--neon-cyan); letter-spacing:1px;">FECHA:</label>
+                <div class="date-nav-wrapper" style="display:flex; gap:10px; align-items:center;">
+                    <input type="date" id="date-picker-filter" class="neon-input" title="Seleccionar fecha"
+                        style="color-scheme: dark; font-size: 14px; padding: 4px 8px; cursor: pointer;">
+ <a href="/">
+    <button id="btnHome" class="home-btn" title="Regresar al Portal Maestro">
+        <i class="fas fa-home"></i>
+    </button>
+</a>
+                    <button id="btnRefresh" class="home-btn" title="Refrescar Datos">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- KPI ROW -->
+        <section class="kpi-row">
+            <div class="kpi-card glass-panel border-cyan">
+                <div class="kpi-title">FECHA ACTUAL</div>
+                <div class="kpi-value time-value" id="current-datetime">ARG-02 00:00</div>
+            </div>
+            <div class="kpi-card glass-panel border-cyan">
+                <div class="kpi-title">TOTAL SKUs</div>
+                <div class="kpi-value" id="kpi-skus">0</div>
+                <div class="kpi-sparkline">
+                    <div class="sparkline-fill bg-cyan" style="width: 0%" id="spark-skus"></div>
+                </div>
+            </div>
+            <div class="kpi-card glass-panel border-blue">
+                <div class="kpi-title">LPN PREVISTOS</div>
+                <div class="kpi-value" id="kpi-lpns">0</div>
+                <div class="kpi-sparkline">
+                    <div class="sparkline-fill bg-blue" style="width: 0%" id="spark-lpns"></div>
+                </div>
+            </div>
+            <div class="kpi-card glass-panel border-red">
+                <div class="kpi-title">CANT. PROVEEDORES</div>
+                <div class="kpi-value text-red" id="kpi-proveedores">0</div>
+                <div class="kpi-sparkline">
+                    <div class="sparkline-fill bg-red" style="width: 0%" id="spark-prov"></div>
+                </div>
+            </div>
+            <div class="kpi-card glass-panel border-blue">
+                <div class="kpi-title">HORAS DISPONIBLES</div>
+                <div class="kpi-value" id="kpi-horas">0.0</div>
+                <div class="kpi-sparkline">
+                    <div class="sparkline-fill bg-blue" style="width: 0%" id="spark-horas"></div>
+                </div>
+            </div>
+            <div class="kpi-card glass-panel border-green">
+                <div class="kpi-title">% CAPACIDAD AGENDA</div>
+                <div class="kpi-value text-green" id="kpi-capacidad">0%</div>
+                <div class="kpi-sparkline">
+                    <div class="sparkline-fill bg-green" style="width: 0%" id="spark-cap"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <!-- CENTER GANTT -->
+            <section class="gantt-section glass-panel" id="gantt-main-section">
+                <div class="gantt-header-title">DOCK GANTT</div>
+
+                <div class="gantt-wrapper">
+                    <div class="gantt-container" id="gantt-container">
+                        <!-- Y-AXIS (PUERTAS) -->
+                        <div class="gantt-y-axis" id="gantt-y-axis">
+                            <div class="gantt-corner">PUERTAS</div>
+                        </div>
+
+                        <!-- X-AXIS AND GRID (TIMELINE) -->
+                        <div class="gantt-timeline-area">
+                            <div class="gantt-x-axis" id="gantt-x-axis"></div>
+                            <div class="gantt-grid" id="gantt-grid"></div>
+                            <div class="gantt-bars-container" id="gantt-bars-container"></div>
+                            <div class="current-time-marker" id="current-time-marker">
+                                <div class="marker-head"></div>
+                                <div class="marker-line"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SIDE INCIDENTS PANEL -->
+            <aside id="incidentsSidebar" class="incidents-sidebar hidden">
+                <div class="sidebar-header">
+                    <h3>CENTRO DE INCIDENCIAS</h3>
+                    <div class="neon-line"></div>
+                </div>
+                <div class="incidents-table-wrapper">
+                    <table class="incidents-table">
+                        <thead>
+                            <tr>
+                                <th>PROVEEDOR</th>
+                                <th>INCIDENCIA</th>
+                                <th>TIPO</th>
+                                <th style="width:60px; text-align:center;">Hrs. Perd.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="incidents-body" class="scrolling-body">
+                            <!-- Loop de incidencias vía JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </aside>
+        </main>
+
+        <!-- FLOATING TAB -->
+        <div id="incidentsTab" class="incidents-tab" title="Incidencias">
+            <i class="fas fa-angles-left"></i>
+        </div>
+
+    </div> <!-- end dashboard-container -->
+
+    <!-- Holograma Modal Error / Warning -->
+    <div id="errorModal" class="gantt-tooltip hologram-modal hidden"
+        style="position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 10000; display: flex; justify-content: center; align-items: center; border: none; padding: 0;">
+        <div class="hologram-content error-content"
+            style="background: rgba(10, 15, 26, 0.95); text-align: center; padding: 40px; border-radius: 12px; border: 2px dashed #ff003c; box-shadow: 0 0 20px rgba(255,0,60,0.5); pointer-events: auto;">
+            <i class="fas fa-exclamation-triangle hologram-icon error-icon"
+                style="font-size: 4rem; color: #ff003c; text-shadow: 0 0 15px #ff003c; margin-bottom: 12px;"></i>
+            <h2 id="errorModalTitle"
+                style="color: #ff003c; font-family: var(--font-head); font-size: 1.3rem; margin-bottom: 10px;">Sistema
+                CEDIS</h2>
+            <p id="errorModalMsg" style="color: #e2e8f0; font-size: 1rem; margin-top: 8px;">Mensaje de error.</p>
+            <div class="modal-actions" id="errorModalActions"
+                style="display: flex; justify-content: center; width: 100%; margin-top: 25px; gap: 15px;">
+                <button type="button" id="errorBtnOk" class="neon-btn btn-red" style="padding: 10px 20px;">OK</button>
+                <div id="errorBtnYesNo" style="display:none; gap:15px; width:100%;">
+                    <button type="button" id="errorBtnYes" class="neon-btn btn-red" style="flex:1;">SÍ</button>
+                    <button type="button" id="errorBtnNo" class="neon-btn"
+                        style="flex:1; border-color:#ff003c; color:#ff003c;">NO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
