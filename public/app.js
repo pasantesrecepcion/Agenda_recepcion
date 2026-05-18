@@ -1,3 +1,4 @@
+
 // =========================================================
 // CONFIGURACIÓN GANTT Y CONSTANTES
 // =========================================================
@@ -376,12 +377,12 @@ function buildGanttGrid() {
 
     // Barras de DISTRIBUCIÓN (07:30-08:30) como barras Gantt grises estáticas
     addDistribucionBars(barsCont, ganttStartMin);
-}
+    }
 
 function addDistribucionBars(barsCont, ganttStartMin) {
     // 1. Tiempos para bloque estándar DISTRIBUCIÓN (07:30 - 08:30)
     const distStart = 7 * 60 + 30; // 450
-    const distEnd = 8 * 60 + 30;   // 510
+const distEnd = 8 * 60 + 30;   // 510
     const leftPxDist = (distStart - ganttStartMin) * PX_PER_MINUTE;
     const widthPxDist = (distEnd - distStart) * PX_PER_MINUTE;
 
@@ -394,8 +395,8 @@ function addDistribucionBars(barsCont, ganttStartMin) {
     // Definimos cuáles son las puertas restringidas por la mañana
     const RESTRICTED_DOORS = ['Puerta_9', 'Puerta_10'];
 
-    puertasConfig.forEach(p => {
-        // Variables para configurar cada bloque dinámicamente
+    puertasConfig.forEach(p => {    
+// Variables para configurar cada bloque dinámicamente
         let finalLeft = 0;
         let finalWidth = 0;
         let isRestricted = false;
@@ -418,7 +419,6 @@ function addDistribucionBars(barsCont, ganttStartMin) {
         if (!row) return;
 
         const bar = document.createElement('div');
-        
         if (isRestricted) {
             // Clases y diseño para Puertas 9 y 10
             bar.className = 'gantt-bar restricted-static-bar'; 
