@@ -219,7 +219,7 @@ async function fetchDataForDate(dateStr) {
 }
 
 // =========================================================
-// UPDATE KPI + GANTT
+// UPDATE KPI + GANTT — LOGÍSTICA CEDIS FIJADA A 77 HORAS REALES
 // =========================================================
 function updateDashboard() {
     if (!currentDateStr || !agendaData[currentDateStr]) {
@@ -228,12 +228,31 @@ function updateDashboard() {
     }
 
     const dayData = agendaData[currentDateStr];
-    let totalSKUs = 0, totalLPNs = 0, totalMinutes = 0;
+    let totalSKUs = 0, totalLPNs = 0;
     let uniqueProviders = new Set();
 
+    // 1. Inicializar la estructura para agrupar bloques por puerta
     const blocksByDoor = {};
     puertasConfig.forEach(p => blocksByDoor[p.id] = []);
 
+    // Configuración de bloqueos fijos del CEDIS para el cálculo matemático
+    const DIST_DOORS = ['Puerta_2', 'Puerta_3', 'Puerta_4', 'Puerta_5', 'Puerta_7'];
+    const RESTRICTED_DOORS = ['Puerta_9', 'Puerta_10'];
+
+    // Estructura para registrar los minutos ocupados por cada puerta individualmente
+    const occupiedMinutesByDoor = {};
+    puertasConfig.forEach(p => {
+        // Inicializamos cada puerta con sus respectivos minutos de bloqueo estático obligatorio
+        if (RESTRICTED_DOORS.includes(p.id)) {
+            occupiedMinutesByDoor[p.id] = 390; // 07:30 a 14:00 = 6.5 horas = 390 min
+        } else if (DIST_DOORS.includes(p.id)) {
+            occupiedMinutesByDoor[p.id] = 60;  // 07:30 a 08:30 = 1 hora = 60 min
+        } else {
+            occupiedMinutesByDoor[p.id] = 0;
+        }
+    });
+
+    // 2. Procesar registros de la agenda del día
     for (const record of Object.values(dayData)) {
         if (!record?.puerta) continue;
         const doorId = record.puerta.replace(' ', '_');
@@ -248,9 +267,15 @@ function updateDashboard() {
         totalLPNs += lpns;
         uniqueProviders.add(prov);
 
+        // Calcular la duración de la cita de este proveedor en minutos
+        let citationMinutes = 0;
         if (record.hora_inicio && record.hora_fin) {
             const diff = timeToMinutes(record.hora_fin) - timeToMinutes(record.hora_inicio);
-            if (diff > 0) totalMinutes += diff;
+            if (diff > 0) {
+                citationMinutes = diff;
+                // Sumar al acumulado de la puerta específica donde se agendó
+                occupiedMinutesByDoor[doorId] += diff;
+            }
         }
 
         blocksByDoor[doorId].push({
@@ -265,7 +290,7 @@ function updateDashboard() {
         });
     }
 
-    // KPIs
+    // --- RENDERIZADO DE KPIS SUPERIORES ---
     document.getElementById('kpi-skus').textContent = totalSKUs;
     document.getElementById('spark-skus').style.width = Math.min((totalSKUs / 1000) * 100, 100) + '%';
 
@@ -275,26 +300,26 @@ function updateDashboard() {
     document.getElementById('kpi-proveedores').textContent = uniqueProviders.size;
     document.getElementById('spark-prov').style.width = Math.min((uniqueProviders.size / 50) * 100, 100) + '%';
 
-   
-    const REAL_CEDIS_CAPACITY_MINUTES = 77 * 60; 
+    // --- CÁLCULO DE CAPACIDAD REAL CON MATRICES PARALELAS ---
+    const REAL_CEDIS_CAPACITY_MINUTES = 77 * 60; // 4620 minutos totales en el CEDIS
     
-    // 1. Minutos disponibles restando el tiempo de citas ya agendadas por los proveedores
-    const availableMinutes = Math.max(REAL_CEDIS_CAPACITY_MINUTES - totalMinutes, 0);
-    
-    // 2. Insertar el valor numérico en horas en el KPI superior (Marcaba 95.0, ahora marcará de base 77.0)
+    // Sumamos la ocupación real de cada puerta cuidando de no exceder el límite operativo diario por puerta (9.5 horas = 570 min)
+    let totalMinutesOcupadosCEDIS = 0;
+    puertasConfig.forEach(p => {
+        const minsOcupadosEnPuerta = Math.min(occupiedMinutesByDoor[p.id], 570);
+        totalMinutesOcupadosCEDIS += minsOcupadosEnPuerta;
+    });
+
+    // Horas disponibles reales (ahora sí considerará los huecos libres de las puertas 1 y 6)
+    const availableMinutes = Math.max(REAL_CEDIS_CAPACITY_MINUTES - totalMinutesOcupadosCEDIS, 0);
     document.getElementById('kpi-horas').textContent = (availableMinutes / 60).toFixed(1);
     
-    // 3. Ajustar la barra de progreso azul para que se consuma sobre la base de las 77 horas
     const sparkHorasWidth = Math.min((availableMinutes / REAL_CEDIS_CAPACITY_MINUTES) * 100, 100);
     document.getElementById('spark-horas').style.width = sparkHorasWidth + '%';
 
-    // 4. Calcular el porcentaje de ocupación real de la agenda sobre la base de 77 horas
-    const cap = Math.min(Math.round((totalMinutes / REAL_CEDIS_CAPACITY_MINUTES) * 100), 100);
-    
-    // 5. Insertar el porcentaje en el KPI verde de capacidad de agenda
+    // Porcentaje de ocupación real de la infraestructura general
+    const cap = Math.min(Math.round((totalMinutesOcupadosCEDIS / REAL_CEDIS_CAPACITY_MINUTES) * 100), 100);
     document.getElementById('kpi-capacidad').textContent = cap + '%';
-    
-    // 6. Ajustar la barra de progreso verde para que crezca proporcionalmente a las 77 horas
     document.getElementById('spark-cap').style.width = cap + '%';
 
     renderGanttBars(blocksByDoor);
@@ -431,9 +456,11 @@ function renderGanttBars(blocksByDoor) {
             if (endMin <= ganttStartMin || startMin >= ganttEndMin) return;
             if (endMin - startMin <= 0) return;
 
-            // Corte almuerzo 12:00–13:00
-            const lunchStart = 12 * 60;
-            const lunchEnd = 13 * 60;
+            // =========================================================
+            // CORRECCIÓN CRÍTICA: Corte almuerzo REAL de 12:00 a 12:30 (30 min)
+            // =========================================================
+            const lunchStart = 12 * 60; // 720 minutos
+            const lunchEnd = 12 * 60 + 30; // 750 minutos (12:30)
             let subBlocks = [];
 
             if (startMin < lunchStart && endMin > lunchEnd) {
@@ -444,7 +471,11 @@ function renderGanttBars(blocksByDoor) {
             } else if (startMin < lunchEnd && endMin > lunchEnd) {
                 subBlocks.push({ start: lunchEnd, end: endMin });
             } else {
-                subBlocks.push({ start: startMin, end: endMin });
+                // Si la cita cae completamente dentro del almuerzo o fuera de él, se procesa normal
+                // Pero ojo: si cae dentro del almuerzo, hay que filtrar para que no dibuje bloques huérfanos
+                if (!(startMin >= lunchStart && endMin <= lunchEnd)) {
+                    subBlocks.push({ start: startMin, end: endMin });
+                }
             }
 
             // LÓGICA DE COLORES POR ESTADO (NUEVO)
