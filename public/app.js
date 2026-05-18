@@ -264,26 +264,36 @@ function updateDashboard() {
     }
 
     // KPIs
-    document.getElementById('kpi-skus').textContent = totalSKUs;
-    document.getElementById('spark-skus').style.width = Math.min((totalSKUs / 1000) * 100, 100) + '%';
-
+    // =========================================================
+    // RENDIMIENTO GENERAL DE CAPACIDAD (BASADO EN 77 HORAS)
+    // =========================================================
     document.getElementById('kpi-lpns').textContent = totalLPNs;
     document.getElementById('spark-lpns').style.width = Math.min((totalLPNs / 1000) * 100, 100) + '%';
 
     document.getElementById('kpi-proveedores').textContent = uniqueProviders.size;
     document.getElementById('spark-prov').style.width = Math.min((uniqueProviders.size / 50) * 100, 100) + '%';
 
-    const maxCapacityMinutes = 10 * 9.5 * 60; // 5700 min
-    const availableMinutes = Math.max(maxCapacityMinutes - totalMinutes, 0);
-    document.getElementById('kpi-horas').textContent = (availableMinutes / 60).toFixed(1);
-    document.getElementById('spark-horas').style.width = Math.min((availableMinutes / maxCapacityMinutes) * 100, 100) + '%';
+    // --- AJUSTE OPERATIVO PARA CAPACIDAD REAL DEL CEDIS (77 HORAS) ---
+    const REAL_CEDIS_CAPACITY_MINUTES = 77 * 60; // 4620 minutos totales
 
-    const cap = Math.min(Math.round((totalMinutes / maxCapacityMinutes) * 100), 100);
+    // 1. Horas disponibles reales considerando los huecos libres
+    const availableMinutes = Math.max(REAL_CEDIS_CAPACITY_MINUTES - totalMinutes, 0);
+    document.getElementById('kpi-horas').textContent = (availableMinutes / 60).toFixed(1);
+
+    // 2. Barra de progreso azul (sparkline) de las horas disponibles
+    const sparkHorasWidth = Math.min((availableMinutes / REAL_CEDIS_CAPACITY_MINUTES) * 100, 100);
+    document.getElementById('spark-horas').style.width = sparkHorasWidth + '%';
+
+    // 3. Porcentaje de ocupación real de la infraestructura general (KPI Verde)
+    const cap = Math.min(Math.round((totalMinutes / REAL_CEDIS_CAPACITY_MINUTES) * 100), 100);
     document.getElementById('kpi-capacidad').textContent = cap + '%';
+
+    // 4. Barra de progreso verde (sparkline) de la capacidad de agenda
     document.getElementById('spark-cap').style.width = cap + '%';
 
+    // EJECUTAMOS EL RENDERIZADO DEL DOCK GANTT PASÁNDOLE LOS BLOQUES ORGANIZADOS
     renderGanttBars(blocksByDoor);
-}
+} // <-- ESTA LLAVE CIERRA DEFINITIVAMENTE LA FUNCIÓN updateDashboard
 
 function clearGanttAndKPIs() {
     ['kpi-skus', 'kpi-lpns', 'kpi-proveedores', 'kpi-horas'].forEach(id =>
