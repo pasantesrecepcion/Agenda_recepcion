@@ -29,8 +29,10 @@ let puertasConfig = [
 const BAR_COLORS = ['bg-cyan', 'bg-blue', 'bg-green', 'bg-orange', 'bg-purple'];
 
 // Puertas con bloque DISTRIBUCIÓN (07:30-08:30)
-const DIST_DOORS = ['Puerta_2', 'Puerta_3', 'Puerta_4', 'Puerta_5', 'Puerta_7', 'Puerta_10'];
+const DIST_DOORS = ['Puerta_2', 'Puerta_3', 'Puerta_4', 'Puerta_5', 'Puerta_7'];
 
+// Puertas con bloqueo extendido RESTRINGIDO (07:30-14:00)
+const RESTRICTED_DOORS = ['Puerta_9', 'Puerta_10'];
 // Credenciales
 // Eliminadas para forzar rol de supervisor
 
@@ -270,17 +272,27 @@ function updateDashboard() {
     document.getElementById('kpi-lpns').textContent = totalLPNs;
     document.getElementById('spark-lpns').style.width = Math.min((totalLPNs / 1000) * 100, 100) + '%';
 
-    document.getElementById('kpi-proveedores').textContent = uniqueProviders.size;
-    document.getElementById('spark-prov').style.width = Math.min((uniqueProviders.size / 50) * 100, 100) + '%';
+       // --- AJUSTE OPERATIVO PARA CAPACIDAD REAL DEL CEDIS (77 HORAS) ---
+        const REAL_CEDIS_CAPACITY_MINUTES = 77 * 60; // 4620 minutos totales
+        
+        // 1. Minutos disponibles restando el tiempo de citas ya agendadas
+        const availableMinutes = Math.max(REAL_CEDIS_CAPACITY_MINUTES - totalMinutes, 0);
+        
+        // 2. Insertar el valor en horas en el KPI superior (ej: 77.0)
+        document.getElementById('kpi-horas').textContent = (availableMinutes / 60).toFixed(1);
+        
+        // 3. Barra de progreso azul (sparkline) de las horas disponibles
+        const sparkHorasWidth = Math.min((availableMinutes / REAL_CEDIS_CAPACITY_MINUTES) * 100, 100);
+        document.getElementById('spark-horas').style.width = sparkHorasWidth + '%';
 
-    const maxCapacityMinutes = 10 * 9.5 * 60; // 5700 min
-    const availableMinutes = Math.max(maxCapacityMinutes - totalMinutes, 0);
-    document.getElementById('kpi-horas').textContent = (availableMinutes / 60).toFixed(1);
-    document.getElementById('spark-horas').style.width = Math.min((availableMinutes / maxCapacityMinutes) * 100, 100) + '%';
-
-    const cap = Math.min(Math.round((totalMinutes / maxCapacityMinutes) * 100), 100);
-    document.getElementById('kpi-capacidad').textContent = cap + '%';
-    document.getElementById('spark-cap').style.width = cap + '%';
+        // 4. Porcentaje de ocupación de la agenda sobre la base real de 77 horas
+        const cap = Math.min(Math.round((totalMinutes / REAL_CEDIS_CAPACITY_MINUTES) * 100), 100);
+        
+        // 5. Insertar el porcentaje en el KPI verde
+        document.getElementById('kpi-capacidad').textContent = cap + '%';
+        
+        // 6. Barra de progreso verde (sparkline) de la capacidad de agenda
+        document.getElementById('spark-cap').style.width = cap + '%';
 
     renderGanttBars(blocksByDoor);
 }
@@ -367,22 +379,62 @@ function buildGanttGrid() {
 }
 
 function addDistribucionBars(barsCont, ganttStartMin) {
+    // 1. Tiempos para bloque estándar DISTRIBUCIÓN (07:30 - 08:30)
     const distStart = 7 * 60 + 30; // 450
-    const distEnd = 8 * 60 + 30; // 510
-    const leftPx = (distStart - ganttStartMin) * PX_PER_MINUTE;
-    const widthPx = (distEnd - distStart) * PX_PER_MINUTE;
+    const distEnd = 8 * 60 + 30;   // 510
+    const leftPxDist = (distStart - ganttStartMin) * PX_PER_MINUTE;
+    const widthPxDist = (distEnd - distStart) * PX_PER_MINUTE;
+
+    // 2. NUEVOS Tiempos para bloque RESTRINGIDO (07:30 - 14:00)
+    const restStart = 7 * 60 + 30; // 450
+    const restEnd = 14 * 60 + 0;   // 840 (14:00 hrs)
+    const leftPxRest = (restStart - ganttStartMin) * PX_PER_MINUTE;
+    const widthPxRest = (restEnd - restStart) * PX_PER_MINUTE;
+
+    // Definimos cuáles son las puertas restringidas por la mañana
+    const RESTRICTED_DOORS = ['Puerta_9', 'Puerta_10'];
 
     puertasConfig.forEach(p => {
-        if (!DIST_DOORS.includes(p.id)) return;
+        // Variables para configurar cada bloque dinámicamente
+        let finalLeft = 0;
+        let finalWidth = 0;
+        let isRestricted = false;
+
+        // Evaluamos qué tipo de bloqueo le toca a la puerta
+        if (RESTRICTED_DOORS.includes(p.id)) {
+            finalLeft = leftPxRest;
+            finalWidth = widthPxRest;
+            isRestricted = true;
+        } else if (DIST_DOORS.includes(p.id)) {
+            finalLeft = leftPxDist;
+            finalWidth = widthPxDist;
+            isRestricted = false;
+        } else {
+            // Si no es distribución ni restringida, saltar puerta
+            return; 
+        }
+
         const row = barsCont.querySelector(`.gantt-row[data-door="${p.id}"]`);
         if (!row) return;
 
         const bar = document.createElement('div');
-        bar.className = 'gantt-bar dist-static-bar';
-        bar.style.left = leftPx + 'px';
-        bar.style.width = Math.max(widthPx, 2) + 'px';
-        bar.dataset.isDistribucion = 'true';
-        bar.innerHTML = `<div class="gantt-bar-content"><span class="gantt-bar-title dist-label">DISTRIBUCIÓN</span></div>`;
+        
+        if (isRestricted) {
+            // Clases y diseño para Puertas 9 y 10
+            bar.className = 'gantt-bar restricted-static-bar'; 
+            bar.style.left = finalLeft + 'px';
+            bar.style.width = Math.max(finalWidth, 2) + 'px';
+            bar.dataset.isRestricted = 'true';
+            bar.innerHTML = `<div class="gantt-bar-content"><span class="gantt-bar-title restricted-label">RESTRINGIDO</span></div>`;
+        } else {
+            // Mantiene tu diseño original para las demás puertas
+            bar.className = 'gantt-bar dist-static-bar';
+            bar.style.left = finalLeft + 'px';
+            bar.style.width = Math.max(finalWidth, 2) + 'px';
+            bar.dataset.isDistribucion = 'true';
+            bar.innerHTML = `<div class="gantt-bar-content"><span class="gantt-bar-title dist-label">DISTRIBUCIÓN</span></div>`;
+        }
+
         row.appendChild(bar);
     });
 }
