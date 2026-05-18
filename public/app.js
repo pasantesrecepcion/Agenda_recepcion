@@ -28,10 +28,10 @@ let puertasConfig = [
 // Colores de barras
 const BAR_COLORS = ['bg-cyan', 'bg-blue', 'bg-green', 'bg-orange', 'bg-purple'];
 
-// Puertas con bloque DISTRIBUCIÓN (07:30-08:30)
+// Puertas que tienen el bloque estándar de DISTRIBUCIÓN (07:30-08:30)
 const DIST_DOORS = ['Puerta_2', 'Puerta_3', 'Puerta_4', 'Puerta_5', 'Puerta_7'];
 
-// Puertas con bloqueo extendido RESTRINGIDO (07:30-14:00)
+// Puertas con bloqueo extendido RESTRINGIDO / NO DISPONIBLE (07:30-14:00)
 const RESTRICTED_DOORS = ['Puerta_9', 'Puerta_10'];
 // Credenciales
 // Eliminadas para forzar rol de supervisor
