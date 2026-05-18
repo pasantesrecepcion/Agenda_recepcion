@@ -1,4 +1,3 @@
-
 // =========================================================
 // CONFIGURACIÓN GANTT Y CONSTANTES
 // =========================================================
@@ -30,10 +29,8 @@ let puertasConfig = [
 const BAR_COLORS = ['bg-cyan', 'bg-blue', 'bg-green', 'bg-orange', 'bg-purple'];
 
 // Puertas con bloque DISTRIBUCIÓN (07:30-08:30)
-const DIST_DOORS = ['Puerta_2', 'Puerta_3', 'Puerta_4', 'Puerta_5', 'Puerta_7'];
+const DIST_DOORS = ['Puerta_2', 'Puerta_3', 'Puerta_4', 'Puerta_5', 'Puerta_7', 'Puerta_10'];
 
-// Puertas con bloqueo extendido RESTRINGIDO (07:30-14:00)
-const RESTRICTED_DOORS = ['Puerta_9', 'Puerta_10'];
 // Credenciales
 // Eliminadas para forzar rol de supervisor
 
@@ -220,81 +217,68 @@ async function fetchDataForDate(dateStr) {
 }
 
 // =========================================================
-    // MATRIZ DE MINUTOS REALES COMPARTIDOS POR INFRAESTRUCTURA
-    // =========================================================
-    const REAL_CEDIS_CAPACITY_MINUTES = 77 * 60; // 4620 minutos totales
-    let totalMinutesOcupadosCEDIS = 0;
+// UPDATE KPI + GANTT
+// =========================================================
+function updateDashboard() {
+    if (!currentDateStr || !agendaData[currentDateStr]) {
+        clearGanttAndKPIs();
+        return;
+    }
 
-    const DIST_DOORS = ['Puerta_2', 'Puerta_3', 'Puerta_4', 'Puerta_5', 'Puerta_7'];
-    const RESTRICTED_DOORS = ['Puerta_9', 'Puerta_10'];
+    const dayData = agendaData[currentDateStr];
+    let totalSKUs = 0, totalLPNs = 0, totalMinutes = 0;
+    let uniqueProviders = new Set();
 
-    // Calculamos la ocupación real puerta por puerta de manera paralela
-    puertasConfig.forEach(p => {
-        let minsEnEstaPuerta = 0;
+    const blocksByDoor = {};
+    puertasConfig.forEach(p => blocksByDoor[p.id] = []);
 
-        // 1. Cargar bloqueos estáticos iniciales de la mañana
-        if (RESTRICTED_DOORS.includes(p.id)) {
-            minsEnEstaPuerta += 390; // Bloqueo de 07:30 a 14:00 (6.5 hrs)
-        } else if (DIST_DOORS.includes(p.id)) {
-            minsEnEstaPuerta += 60;  // Bloqueo de 07:30 a 08:30 (1 hr)
+    for (const record of Object.values(dayData)) {
+        if (!record?.puerta) continue;
+        const doorId = record.puerta.replace(' ', '_');
+        if (!blocksByDoor[doorId]) continue;
+
+        const skus = parseInt(record.cant_sku || 0) || 0;
+        const lpns = parseInt(record.cant_cajas || 0) || 0;
+        const prov = record.proveedor || 'DESCONOCIDO';
+        const dest = record.tipo_destino || null;
+
+        totalSKUs += skus;
+        totalLPNs += lpns;
+        uniqueProviders.add(prov);
+
+        if (record.hora_inicio && record.hora_fin) {
+            const diff = timeToMinutes(record.hora_fin) - timeToMinutes(record.hora_inicio);
+            if (diff > 0) totalMinutes += diff;
         }
 
-        // 2. Sumar las citas de proveedores asignadas a esta puerta
-        const doorId = p.id;
-        if (blocksByDoor[doorId]) {
-            blocksByDoor[doorId].forEach(record => {
-                if (record.startTime && record.endTime) {
-                    let s = timeToMinutes(record.startTime);
-                    let e = timeToMinutes(record.endTime);
-                    
-                    // Restar el almuerzo del proveedor si su cita pasa por ahí
-                    // para que no duplique minutos que ya están libres
-                    if (s < 12*60 && e > 12*60+30) {
-                        minsEnEstaPuerta += (e - s) - 30; // Quitamos los 30 min de comida
-                    } else {
-                        minsEnEstaPuerta += (e - s);
-                    }
-                }
-            });
-        }
+        blocksByDoor[doorId].push({
+            id: record.id_cita || doorId + '_' + record.hora_inicio,
+            startTime: record.hora_inicio,
+            endTime: record.hora_fin,
+            title: prov,
+            skus, lpns,
+            personal: record.personal_requerido || 'N/A',
+            estado: record.estado || 'Agendado',
+            tipo_destino: dest
+        });
+    }
 
-        // Tope operativo: Ninguna puerta puede trabajar más de la jornada diaria (9.5 horas = 570 min)
-        totalMinutesOcupadosCEDIS += Math.min(minsEnEstaPuerta, 570);
-    });
+    // KPIs
+    document.getElementById('kpi-skus').textContent = totalSKUs;
+    document.getElementById('spark-skus').style.width = Math.min((totalSKUs / 1000) * 100, 100) + '%';
 
-    // --- RENDERIZADO DE KPIS BLINDADOS ---
-    const availableMinutes = Math.max(REAL_CEDIS_CAPACITY_MINUTES - totalMinutesOcupadosCEDIS, 0);
-    
-    // Si la pantalla está colapsada de camiones, esto marcará un valor cercano a 0 o el colchón real matutino de las puertas 1 y 6
+    document.getElementById('kpi-lpns').textContent = totalLPNs;
+    document.getElementById('spark-lpns').style.width = Math.min((totalLPNs / 1000) * 100, 100) + '%';
+
+    document.getElementById('kpi-proveedores').textContent = uniqueProviders.size;
+    document.getElementById('spark-prov').style.width = Math.min((uniqueProviders.size / 50) * 100, 100) + '%';
+
+    const maxCapacityMinutes = 10 * 9.5 * 60; // 5700 min
+    const availableMinutes = Math.max(maxCapacityMinutes - totalMinutes, 0);
     document.getElementById('kpi-horas').textContent = (availableMinutes / 60).toFixed(1);
-    
-    const sparkHorasWidth = Math.min((availableMinutes / REAL_CEDIS_CAPACITY_MINUTES) * 100, 100);
-    document.getElementById('spark-horas').style.width = sparkHorasWidth + '%';
+    document.getElementById('spark-horas').style.width = Math.min((availableMinutes / maxCapacityMinutes) * 100, 100) + '%';
 
-    // Porcentaje de ocupación real de la agenda
-    const cap = Math.min(Math.round((totalMinutesOcupadosCEDIS / REAL_CEDIS_CAPACITY_MINUTES) * 100), 100);
-    document.getElementById('kpi-capacidad').textContent = cap + '%';
-    document.getElementById('spark-cap').style.width = cap + '%';
-    
-    // --- CÁLCULO DE CAPACIDAD REAL CON MATRICES PARALELAS ---
-    const REAL_CEDIS_CAPACITY_MINUTES = 77 * 60; // 4620 minutos totales en el CEDIS
-    
-    // Sumamos la ocupación real de cada puerta cuidando de no exceder el límite operativo diario por puerta (9.5 horas = 570 min)
-    let totalMinutesOcupadosCEDIS = 0;
-    puertasConfig.forEach(p => {
-        const minsOcupadosEnPuerta = Math.min(occupiedMinutesByDoor[p.id], 570);
-        totalMinutesOcupadosCEDIS += minsOcupadosEnPuerta;
-    });
-
-    // Horas disponibles reales (ahora sí considerará los huecos libres de las puertas 1 y 6)
-    const availableMinutes = Math.max(REAL_CEDIS_CAPACITY_MINUTES - totalMinutesOcupadosCEDIS, 0);
-    document.getElementById('kpi-horas').textContent = (availableMinutes / 60).toFixed(1);
-    
-    const sparkHorasWidth = Math.min((availableMinutes / REAL_CEDIS_CAPACITY_MINUTES) * 100, 100);
-    document.getElementById('spark-horas').style.width = sparkHorasWidth + '%';
-
-    // Porcentaje de ocupación real de la infraestructura general
-    const cap = Math.min(Math.round((totalMinutesOcupadosCEDIS / REAL_CEDIS_CAPACITY_MINUTES) * 100), 100);
+    const cap = Math.min(Math.round((totalMinutes / maxCapacityMinutes) * 100), 100);
     document.getElementById('kpi-capacidad').textContent = cap + '%';
     document.getElementById('spark-cap').style.width = cap + '%';
 
@@ -380,7 +364,7 @@ function buildGanttGrid() {
 
     // Barras de DISTRIBUCIÓN (07:30-08:30) como barras Gantt grises estáticas
     addDistribucionBars(barsCont, ganttStartMin);
-    }
+}
 
 function addDistribucionBars(barsCont, ganttStartMin) {
     const distStart = 7 * 60 + 30; // 450
@@ -432,31 +416,21 @@ function renderGanttBars(blocksByDoor) {
             if (endMin <= ganttStartMin || startMin >= ganttEndMin) return;
             if (endMin - startMin <= 0) return;
 
-            // =========================================================
-            // CORRECCIÓN PRE_PRO: CORTE DE ALMUERZO EXACTO (12:00 a 12:30)
-            // =========================================================
-            const lunchStart = 12 * 60;       // 720 minutos
-            const lunchEnd = 12 * 60 + 30;    // 750 minutos
+            // Corte almuerzo 12:00–13:00
+            const lunchStart = 12 * 60;
+            const lunchEnd = 13 * 60;
             let subBlocks = [];
 
-            // Caso A: La cita cruza completamente todo el almuerzo
             if (startMin < lunchStart && endMin > lunchEnd) {
                 subBlocks.push({ start: startMin, end: lunchStart });
                 subBlocks.push({ start: lunchEnd, end: endMin });
-            } 
-            // Caso B: La cita empezó antes pero termina metida dentro del almuerzo
-            else if (startMin < lunchStart && endMin > lunchStart && endMin <= lunchEnd) {
+            } else if (startMin < lunchStart && endMin > lunchStart) {
                 subBlocks.push({ start: startMin, end: lunchStart });
-            } 
-            // Caso C: La cita arranca dentro del almuerzo y sale después de las 12:30
-            else if (startMin >= lunchStart && startMin < lunchEnd && endMin > lunchEnd) {
+            } else if (startMin < lunchEnd && endMin > lunchEnd) {
                 subBlocks.push({ start: lunchEnd, end: endMin });
-            } 
-            // Caso D: La cita está completamente fuera del horario de almuerzo
-            else if (endMin <= lunchStart || startMin >= lunchEnd) {
+            } else {
                 subBlocks.push({ start: startMin, end: endMin });
             }
-            // Nota: Si la cita cae 100% adentro del almuerzo, no se agrega nada (se bloquea)
 
             // LÓGICA DE COLORES POR ESTADO (NUEVO)
             let barColor = 'bg-yellow'; // default
