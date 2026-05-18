@@ -1,3 +1,4 @@
+
 // =========================================================
 // CONFIGURACIÓN GANTT Y CONSTANTES
 // =========================================================
@@ -379,7 +380,7 @@ function buildGanttGrid() {
 
     // Barras de DISTRIBUCIÓN (07:30-08:30) como barras Gantt grises estáticas
     addDistribucionBars(barsCont, ganttStartMin);
-}
+    }
 
 function addDistribucionBars(barsCont, ganttStartMin) {
     const distStart = 7 * 60 + 30; // 450
