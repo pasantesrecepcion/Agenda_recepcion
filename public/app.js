@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // LOGIC: HOME REDIRECTION (PORTAL MAESTRO)
     const btnHome = document.getElementById('btnHome');
     if (btnHome) {
-        btnHome.onclick = () => window.location.href = 'http://10.170.20.169:3004';
+        btnHome.onclick = () => window.location.href = 'https://portal-maestro.vercel.app/';
     }
 
     const btnRefresh = document.getElementById('btnRefresh');
