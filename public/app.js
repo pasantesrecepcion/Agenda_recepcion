@@ -73,9 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // LOGIC: HOME REDIRECTION (PORTAL MAESTRO)
     const btnHome = document.getElementById('btnHome');
-    if (btnHome) {
-        btnHome.onclick = () => window.location.href = 'https://portal-maestro.vercel.app/';
-    }
+if (btnHome) {
+    btnHome.onclick = (e) => {
+        e.preventDefault(); // Detiene el '#' o cualquier recarga del 'a'
+        window.location.href = 'https://portal-maestro.vercel.app/';
+    };
+}
 
     const btnRefresh = document.getElementById('btnRefresh');
     if (btnRefresh) {
